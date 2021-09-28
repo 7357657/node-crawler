@@ -66,7 +66,7 @@ function fetUrl(url, callback, id) {
         console.log(id)
         callback(null, obj)  //将obj传递给第四个参数中的results
       }else{
-        console.log('re fetUrl')
+        console.log('re fetUrl', id)
         fetUrl(url, callback, id)
       }
     })
