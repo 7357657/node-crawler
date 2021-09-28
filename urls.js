@@ -1,4 +1,6 @@
 const urlList = [
+    //小说是从7555开始的
+  'http://www.zwdu.com/book/7555/',
   //1、择天记
   'http://www.zwdu.com/book/8634/',
   //2、雪中悍刀行
