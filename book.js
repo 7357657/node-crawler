@@ -12,11 +12,11 @@ require('superagent-charset')(superagent)
 const async = require('async');
 
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '123456',
-  database: 'book2',
-  port: 3306
+    host: '192.168.1.2',
+    user: 'vue_reader',
+    password: 'vue_reader#@##@#',
+    database: 'vue_reader',
+    port: 3306,
 })
 
 let num = 1  //第几本书开始，失败后根据提示更改此处即可
@@ -46,24 +46,29 @@ function fetUrl(url, callback, id) {
   superagent.get(url)
     .charset('gbk')  //该网站编码为gbk，用到了superagent-charset
     .end(function (err, res) {
-      let $ = cheerio.load(res.text)
-      const arr = []
-      const content = reconvert($("#content").html())
-      //分析结构后分割html
-      const contentArr = content.split('<br><br>')
-      contentArr.forEach(elem => {
-        const data = trim(elem.toString())
-        arr.push(data)
-      })
-      const obj = {
-        id: id,
-        err: 0,
-        bookName: $('.footer_cont a').text(),
-        title: $('.bookname h1').text(),
-        content: arr.join('-').slice(0, 20000)  //由于需要保存至mysql中，不支持直接保存数组，所以将数组拼接成字符串，取出时再分割字符串即可,mysql中varchar最大长度，可改为text类型
+      if (err==null){
+        let $ = cheerio.load(res.text)
+        const arr = []
+        const content = reconvert($("#content").html())
+        //分析结构后分割html
+        const contentArr = content.split('<br><br>')
+        contentArr.forEach(elem => {
+          const data = trim(elem.toString())
+          arr.push(data)
+        })
+        const obj = {
+          id: id,
+          err: 0,
+          bookName: $('.footer_cont a').text(),
+          title: $('.bookname h1').text(),
+          content: arr.join('-').slice(0, 20000)  //由于需要保存至mysql中，不支持直接保存数组，所以将数组拼接成字符串，取出时再分割字符串即可,mysql中varchar最大长度，可改为text类型
+        }
+        console.log(id)
+        callback(null, obj)  //将obj传递给第四个参数中的results
+      }else{
+        console.log('re fetUrl')
+        fetUrl(url, callback, id)
       }
-      console.log(id)
-      callback(null, obj)  //将obj传递给第四个参数中的results
     })
 }
 
@@ -88,8 +93,9 @@ function saveToMysql(results) {
 
 function main(url) {
   superagent.get(url)
-    .charset('gbk')  //该网站编码为gbk，用到了superagent-charset
-    .end(function (err, res) {
+  .charset('gbk')  //该网站编码为gbk，用到了superagent-charset
+  .end(function (err, res) {
+    if (err==null){
       console.log(url)
       var $ = cheerio.load(res.text);  //res.text为获取的网页内容，通过cheerio的load方法处理后，之后就是jQuery的语法了
       let urls = []
@@ -102,15 +108,29 @@ function main(url) {
       })
 
       async.mapLimit(urls, 5, function (url, callback) {
-        id++
-        fetUrl(url, callback, id) //需要对章节编号，所以通过变量id来计数
+         id++
+         fetUrl(url, callback, id) //需要对章节编号，所以通过变量id来计数
       }, function (err, results) {
-        saveToMysql(results)
+         saveToMysql(results)
       })
-    })
+
+    }else if(err.code=='ETIMEDOUT'){
+       console.log(`重新加载:` + url)
+       main(url)
+    }else{
+       console.log(err)
+        urlId++
+        url = urlList[urlId - 1]
+        table++
+        id = 0
+        console.log(`第${urlId}本书`)
+        main(url)
+    }
+  })
 }
 
 app.get('/', function (req, response, next) {
+  console.log(url)
   main(url)
 })
 
