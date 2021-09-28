@@ -12,7 +12,7 @@ require('superagent-charset')(superagent)
 const async = require('async');
 
 const pool = mysql.createPool({
-    host: '192.168.1.2',
+    host: 'game.91eli.com',
     user: 'vue_reader',
     password: 'vue_reader#@##@#',
     database: 'vue_reader',
@@ -128,12 +128,13 @@ function main(url) {
     }
   })
 }
+main(url)
 
-app.get('/', function (req, response, next) {
-  console.log(url)
-  main(url)
-})
+//app.get('/', function (req, response, next) {
+//  console.log(url)
+//  main(url)
+//})
 
-app.listen(3378, function () {
-  console.log('server listening on 3378')
-})
+//app.listen(3378, function () {
+//  console.log('server listening on 3378')
+//})
