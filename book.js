@@ -92,6 +92,7 @@ function saveToMysql(results) {
 }
 
 function main(url) {
+  console.log(url)
   superagent.get(url)
   .charset('gbk')  //该网站编码为gbk，用到了superagent-charset
   .end(function (err, res) {
@@ -131,7 +132,6 @@ function main(url) {
 main(url)
 
 //app.get('/', function (req, response, next) {
-//  console.log(url)
 //  main(url)
 //})
 
